@@ -2,22 +2,7 @@
 // import ReactDOM from 'react-dom';
 import configureStore from 'redux-mock-store'
 import thunk from 'redux-thunk'
-import fetchMock from 'fetch-mock'
-import {dataReducer, getData} from './index.js'
-
-// import {sum} from './sum.js';
-// import App from './App';
-
-// it('sums numbers', () => {
-//   expect(sum(1, 2)).toEqual(3);
-//   expect(sum(2, 2)).toEqual(4);
-// });
-
-// it('renders without crashing', () => {
-//   const div = document.createElement('div');
-//   ReactDOM.render(<App />, div);
-//   ReactDOM.unmountComponentAtNode(div);
-// });
+import {getData, dataReducer} from './index.js'
 
 // model the async flow of beginning and end resulting in success or an error with three actions.
 // mocking the redux-store
@@ -28,51 +13,78 @@ const mockStore = configureStore(middlewares)
 
 // creates a block that groups together several related tests in one "test suite". 
 describe("async action", () => {
-  afterEach(() => {
-    fetchMock.reset()
-    fetchMock.restore()
+  // Dependency injection is about removing the hard coded dependencies and providing 
+  // way of changing dependencies in compile-time or run-time.
+  const api = {
+    fetchApiData: jest.fn(() => {
+      return new Promise((resolve, reject) => { 
+        resolve({
+          data: "value"
+        })
+      })
+    })
+  }
+  const dispatch = jest.fn()
+  const url = `https://api.coindesk.com/v1/bpi/historical/close.json`
+
+  test("should call with correct args", () => {
+    getData(url)(dispatch,null,{api})
+    expect(api.fetchApiData).toHaveBeenCalledWith(url)
+    expect(dispatch).toHaveBeenCalledWith({
+      type:"REQUEST_DATA",
+    })
   })
 
-  test("calls request and success actions if the fetch response was successful", () => {
-    expect.assertions(1);
-     fetchMock
-      .getOnce("https://api.coindesk.com/v1/bpi/historical/close.json",{ bpi: {"2018-06-24":12345}})
-
-    const expectedActions = [
-      { type: "REQUEST_DATA" },
-      { type: "RECEIVE_DATA", apiData: { bpi: {"2018-06-24":12345}}, receivedAt: Date() }
-    ]
-
-    const store = mockStore({})
-    return store.dispatch(getData())
-      .then(() => {
-        const storeActions = store.getActions();
-        expect(storeActions).toEqual(expectedActions);
-    })
+  test("success- should receive data", () => {
+    getData(url)(dispatch,null,{api})
+    expect(api.fetchApiData()).resolves.toEqual({data:"value"})
   })
 })
 
-describe("async action error", () => {
-  afterEach(() => {
-    fetchMock.reset()
-    fetchMock.restore()
+// Reducer Test
+describe(" dataReducer", () => {
+  test("should return the initial state", () => {
+    expect(dataReducer(undefined, {})).toEqual({
+      isFetching: false,
+      apiData: {},
+      error: "",
+      lastUpdated: ""
+    })
   })
 
-  test("calls request and failure actions if the fetch response was not successful", () => {
-    expect.assertions(1);
-     fetchMock
-      .getOnce("https://error.coindesk.com/v1/bpi/historical/close.json",{ error: "error"})
+  test("should handle REQUEST_DATA", () => {
+    const startAction = {
+      type: "REQUEST_DATA",
+      isFetching: true,
+    }
+    expect(dataReducer({}, startAction)).toEqual({
+      isFetching: true,
+    })
+  })
 
-    const expectedActions = [
-      { type: "REQUEST_DATA" },
-      { type: "RECEIVE_ERROR", error: "error"}
-    ]
+  test("should handle REQUEST_DATA", () => {
+    const successAction = {
+      type: "RECEIVE_DATA",
+      isFetching: false,
+      apiData: "json",
+      receivedAt: Date()
+    }
+    expect(dataReducer({}, successAction)).toEqual({
+      isFetching: false,
+      apiData: "json",
+      lastUpdated: Date()
+    })
+  })
 
-    const store = mockStore({})
-    return store.dispatch(getData())
-      .then(() => {
-        const storeActions = store.getActions();
-        expect(storeActions).toEqual(expectedActions);
+  test("should handle RECEIVE_ERROR", () => {
+    const errorAction = {
+      isFetching: false,
+      type: "RECEIVE_ERROR",
+      error: "error"
+    }
+    expect(dataReducer({}, errorAction)).toEqual({
+      isFetching: false,
+      error:"error"
     })
   })
 })

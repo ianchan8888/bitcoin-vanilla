@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-// import App from './App';
 import registerServiceWorker from './registerServiceWorker';
 import './App.css';
 import {connect, Provider} from 'react-redux';
@@ -10,12 +9,6 @@ import { createStore, applyMiddleware } from 'redux'
 import logger from 'redux-logger'
 import PropTypes from 'prop-types'
 import Plot from 'react-plotly.js'
-
-// import logo from './logo.svg';
-
-// const url = "https://www.quandl.com/api/v3/datasets/BCHARTS/"
-// const exchange = "BITSTAMP"
-// const currency = "USD"
 
 // Actions are payloads of information that send data from your application to your store. 
 
@@ -45,14 +38,23 @@ const receiveError = (error) => {
     }
 }
 
+// api
+const api = {
+    fetchApiData: (url) => {
+        return fetch(url)
+    }
+}
+
 // Thunk action creator
-export const getData = () => {
+export const getData = (url) => {
     // It passes the dispatch method as an argument to the function,
     // thus making it able to dispatch actions itself.
-    return (dispatch) => {
+    return (dispatch, getState, {api}) => {
         dispatch(requestData())
-        return fetch(`https://api.coindesk.com/v1/bpi/historical/close.json`)
-            .then((response) => response.json())
+        return api.fetchApiData(url)
+            .then((response) => {
+                return response.json()
+            })
             .then((json) => {
                 dispatch(receiveData(json))
             }).catch((error) => {
@@ -61,32 +63,115 @@ export const getData = () => {
     }
 }
 
+
+const connected = () => {
+    return {
+        type: "Connected"
+    }
+}
+
+const disconnected = () => {
+    return {
+        type: "Disconnected"
+    }
+}
+
+const receiveMessage = (msg) => {
+    return {
+        type: "RECEIVE_MESSAGE",
+        msgr,
+    }
+}
+
+const webSocketApi =  {
+    websocket : (url) => {
+        return new WebSocket(url)
+    }
+
+}
+
+// Create WebSocket connection.
+export const connectBlockChainWebSocket = (url) => {
+    webSpcketApi.websocket(url)    
+    websocket.onopen = () => onOpen()
+    websocket.onmessage = (event) => onMessage(event)
+    websocket.onerror = (event) => onError(event)
+    websocket.onclose = (event) => onClose(event)
+    https://exec64.co.uk/blog/websockets_with_redux/
+    // function onOpen() {
+    //     // sendMessage({
+    //     //     "op":"unconfirmed_sub"
+    //     // });
+    //     console.log("open")
+    // }
+
+    // function onMessage(event) {
+    //     console.log(JSON.parse(event.data))
+    // }
+
+    // function onClose() {
+    //     sendMessage({
+    //         "op":"unconfirmed_unsub"
+    //     });
+    // }
+
+    // function sendMessage(msg) {
+    //     websocket.send(JSON.stringify(msg))
+    // }
+
+    // function onError(event) {
+    //     console.log(event)
+    // }
+}
+
+
 // Reducers - specify how the application's state changes in response to actions sent to store
 // All the application state is stored as a single object
 // Design the shape of your application's state 
 // We want to store - list of Bitcoin price data
 
 // initial state
-const initialState = {
-  apiData: {},
-  lastUpdated: '',
-  error: ''
+const dataInitialState = {
+    isFetching: false,
+    apiData: {},
+    lastUpdated: "",
+    error: ""
 }
 
-export const dataReducer = (state = initialState, action) => {
-  switch(action.type) {
-    case "RECEIVE_DATA":
-        return Object.assign({}, state, {
-            apiData: action.apiData,
-            lastUpdated: action.receivedAt
-        })
-    case "RECEIVE_ERROR":
-        return Object.assign({}, state,{
-            error: action.error
-        })
-    default:
-        return state
+export const dataReducer = (state = dataInitialState, action) => {
+    switch(action.type) {
+        case "REQUEST_DATA":
+            return Object.assign({}, state, {
+                isFetching: true
+            })
+        case "RECEIVE_DATA":
+            return Object.assign({}, state, {
+                isFetching: false,
+                apiData: action.apiData,
+                lastUpdated: action.receivedAt
+            })
+        case "RECEIVE_ERROR":
+            return Object.assign({}, state, {
+                isFetching: false,
+                error: action.error
+            })
+        default:
+            return state
   }
+}
+
+const blockchainInitialState = {
+    msg: {},
+    error: ""
+}
+
+const blockchainReducer = (state = blockchainInitialState, action) => {
+    switch(active.type) {
+        case "CONNECTED":
+            return Object.assign({}, state, {
+                msg: "Welcome"
+            })
+    }
 }
 
 // Store - An object that holds the complete state of your app.
@@ -106,7 +191,7 @@ const store = createStore(
             It provides a third-party extension point between dispatching an action, 
             and the moment it reaches the reducer.
         */
-        thunkMiddleware, // They would receive dispatch as an argument and may call it asynchronously. 
+        thunkMiddleware.withExtraArgument({api}), // They would receive dispatch as an argument and may call it asynchronously. 
         /*
             It is a middleware that looks at every action that passes through the system, and if it’s a function,
             it calls that function. That’s all it does.
@@ -123,28 +208,23 @@ const store = createStore(
 
 class App extends Component {
     componentDidMount() {
-        this.props.fetchData()
+        const url = `https://api.coindesk.com/v1/bpi/historical/close.json`
+        this.props.fetchData(url)
     }
 
     render() {
-                // Create WebSocket connection.
-        const socket = new WebSocket('ws://localhost:8080');
 
-        // Connection opened
-        socket.addEventListener('open', function (event) {
-            socket.send('Hello Server!');
-        });
 
-        // Listen for messages
-        socket.addEventListener('message', function (event) {
-            console.log('Message from server ', event.data);
-        }); 
+        const fetchState = this.props.isFetching
         const {bpi, time} = this.props.apiData
         const updateTime = this.props.lastUpdated
         const error = this.props.error
-
+        
         return (
             <div className="container">
+                {fetchState &&
+                    <h4>Loading</h4>
+                }
                 {time &&
                     <Header serverUpdate={time} update={updateTime}/>
                 }
@@ -219,8 +299,8 @@ class Header extends Component {
     render() {
         return (
             <header>
-                <h2>Server Time: {Object.values(this.props.serverUpdate)[0]}</h2>
-                <h2>Last Updated: {this.props.update} </h2>
+                <h2>Data Updated At: {Object.values(this.props.serverUpdate)[0]}</h2>
+                <h2>Local Time: {this.props.update} </h2>
             </header>
         )
     }
@@ -230,7 +310,20 @@ class Footer extends Component {
     render() {
         return (
             <footer>
-                <h4>Best Site</h4>
+                <p>Blockchain Movement</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>In Address</th>
+                            <th>Out Address</th>
+                        </tr>
+                        <tr>
+                            <td>In Address</td>
+                            <td>Out Address</td>
+                        </tr>
+                    </thead>
+                </table>
+                <h4>Best App</h4>
             </footer>
         )
     }
@@ -239,25 +332,23 @@ class Footer extends Component {
 // Tells how to transform the current Redux store state into the props you want to pass to a presentational component you are wrapping.
 // If this argument is specified, the new component will subscribe to Redux store updates. This means that any time the store is updated, mapStateToProps will be called. 
 const mapStateToProps = (state) => ({
-    apiData:state.apiData,
+    isFetching: state.isFetching,
+    apiData: state.apiData,
     lastUpdated: state.lastUpdated,
     error: state.error
 });
 
 // If a function is passed, it will be given dispatch as the first parameter
-const mapDispatchtoProps = (dispatch) => ({
-    fetchData() {
-        dispatch(getData())
-    }
-})
 
 // React Redux library's connect() function, which provides many useful optimizations to prevent unnecessary re-renders.
 // Connects a React component to a Redux store. 
 // It returns a new, connected component class for you to use
-const ConnectedApp = connect(mapStateToProps, mapDispatchtoProps)(App)
+const ConnectedApp = connect(
+    mapStateToProps,
+    {fetchData: getData}
+)(App)
 
 // Proptypes- runtime checking for React props, to document the intended types of properties passed to components. 
-
 
 ReactDOM.render(
     <Provider store = {store}> 
