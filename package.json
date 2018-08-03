@@ -20,5 +20,10 @@
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom --modulePaths=src",
     "eject": "react-scripts eject"
+  },
+  "proxy": {
+    "/api": {
+      "target": "wss.cex.io"
+    }
   }
 }
