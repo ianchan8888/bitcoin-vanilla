@@ -112,7 +112,6 @@ const wsDisconnected = (event) => {
 }
 
 const wsReceiveMessage = (message) => {
-    console.log(message)
     return {
         type: "WEBSOCKET_RECEIVE_MESSAGE",
         message
@@ -372,13 +371,32 @@ App.propTypes = {
 }
 
 class BlockChainData extends Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            bid: ""
+        }
+        this.handleChange.bind(this)
+    }
+
+    // static getDerivedStateFromProps(props, state) {
+    //     console.log(props)
+    //     console.log(state)
+
+        
+    // }
+    handleChange(event) {
+        console.log(event.target)
+        this.setState({bid:event.target.value})
+    }
     render() {
         const parsedData = JSON.parse(this.props.wsData)
+        const {bid, ask, volume, pair} = parsedData
         
         return (
             <div>
-                <p><b>Trade Pair</b> {parsedData.pair}</p>
-                <p><b>Volume</b> {parsedData.volume}</p>
+                <p><b>Trade Pair</b> {pair}</p>
+                <p><b>Volume</b> {volume}</p>
                 <table>
                     <thead>
                         <tr>
@@ -389,12 +407,12 @@ class BlockChainData extends Component {
                     <tbody>
                         <tr>
                             <td>
-                                <div onChange={console.log(parsedData.bid)}>
-                                    {parsedData.bid}
+                                <div onChange={this.handleChange} value={bid}>
+                                    {this.state.bid}
                                 </div>
                             </td>
                             <td>
-                                {parsedData.ask}
+                                {ask}
                             </td>
                         </tr>
                     </tbody>
