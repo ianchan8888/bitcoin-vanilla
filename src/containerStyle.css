@@ -1,0 +1,25 @@
+:root {
+  --main-theme-color: rgb(24, 129, 170);
+}
+
+.container  {
+  display: flex; 
+  flex-flow: column wrap;
+  border: 2px solid var(--main-theme-color);
+  text-align: center;
+}
+
+.b-container {
+  display: flex; 
+  flex-flow: column wrap;
+  justify-content: center;
+  border: 2px solid var(--main-theme-color);
+  padding: 0.5%;
+  margin: 0.5%;
+}
+
+.m-container {
+  display: flex; 
+  flex-flow: row wrap;
+  justify-content: space-evenly;
+}

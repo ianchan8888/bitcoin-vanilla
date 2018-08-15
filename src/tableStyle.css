@@ -1,0 +1,26 @@
+:root {
+    --main-theme-color: rgb(24, 129, 170);
+}
+
+#real-time-table td, th {
+    border: 1px solid var(--main-theme-color);
+    overflow: hidden;
+} 
+
+#real-time-table {
+    table-layout: fixed;
+}
+
+#historical-table {
+    width: 100%;
+}
+
+#historical-table td, th {
+    border-bottom:  1px solid var(--main-theme-color);
+    padding: 2px 2px 4px 2px;
+}
+
+#historical-table tr:nth-child(even) {
+    background-color: #ddd
+}
+

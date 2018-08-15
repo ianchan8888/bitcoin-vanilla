@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "classnames": "^2.2.6",
+    "moment": "^2.22.2",
     "plotly.js": "^1.39.2",
     "prop-types": "^15.6.2",
     "react": "^16.4.1",
@@ -10,6 +12,7 @@
     "react-plotly.js": "^2.2.0",
     "react-redux": "^5.0.7",
     "react-scripts": "1.1.4",
+    "recharts": "^1.1.0",
     "redux": "^4.0.0",
     "redux-logger": "^3.0.6",
     "redux-mock-store": "^1.5.3",

@@ -1,0 +1,26 @@
+:root {
+    --original-colour: #D3D3D3;
+    --red-colour: #ff6666;
+    --green-colour: #66ff66 ;
+    --main-theme-color: rgb(24, 129, 170);
+}
+
+.originalBackground {
+    background-color: var(--original-colour)
+}
+  
+.redBackground {
+    background-color: var(--red-colour)
+}
+  
+.greenBackground {
+    background-color:  var(--green-colour)
+}
+
+.originalTextColour {
+    color: var(--main-theme-color)
+}
+
+.redTextColour {
+    color: var(--red-colour)
+}

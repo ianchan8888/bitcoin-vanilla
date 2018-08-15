@@ -2,24 +2,5 @@ body {
   font-family: Tahoma, sans-serif;
 }
 
-.container  {
-  display: flex; 
-  flex-flow: column wrap;
-  border: 5px solid rgb(24, 129, 170);
-  text-align: center;
-}
 
-.display-box {
-  display: flex; 
-  justify-content: space-evenly
-}
 
-.cell {
-  padding: 4px 4px 4px 4px;
-  border: 1px solid rgb(24, 129, 170);
-}
-
-.graph {
-  display: flex; 
-  align-items: center
-}
